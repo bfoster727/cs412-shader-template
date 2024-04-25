@@ -75,8 +75,8 @@ function update() : void{
     if(particles.length<num_particles) {
         for (let i = 0; i < 2; i++) {
             const p = new Particle();
-            p.life = 50.0;
-            p.position = new THREE.Vector3((2*Math.random()-1)*5, (2*Math.random()-1)*3, 0);
+            p.life = 0.0;
+            p.position = new THREE.Vector3((2*Math.random()-1)*5, (2*Math.random()-1)*3, (2*Math.random()-1)*5);
             const geom = new THREE.CircleGeometry(0.5, 32);
             const material = new THREE.ShaderMaterial({
                 uniforms : {
@@ -94,12 +94,12 @@ function update() : void{
     }
     for(let i = 0; i<particles.length; i++){
         let p = particles[i];
-        if(p.life<0){
+        if(p.life>50){
             scene.remove(p.mesh);
             particles.splice(i,1);
         }
-        if(p.life>=0){
-            p.life--;
+        if(p.life<=50){
+            p.life++;
         }
     }
 }
