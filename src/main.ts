@@ -15,19 +15,23 @@ let renderer : THREE.WebGLRenderer;
 let scene : THREE.Scene;
 let camera : THREE.PerspectiveCamera;
 
+let num_particles = 500;
+let particles : Array<Particle> = [];
+
 class Particle {
     position : THREE.Vector3;
     velocity : THREE.Vector3;
     color : THREE.Color;
     life : number;
+    mesh : THREE.Mesh;
     constructor(){
         this.position = new THREE.Vector3(0,0,0);
         this.velocity = new THREE.Vector3(0,1,0);
         this.color = new THREE.Color(255,0,0);
         this.life = 0;
+        this.mesh = null;
     }
 }
-
 
 function main() : void {
     // Get the canvas element
@@ -38,8 +42,6 @@ function main() : void {
     camera = new THREE.PerspectiveCamera( 45.0, canvas.width / canvas.height, 0.5, 2000 );
     camera.position.z = 8.0;
 
-    //Instantiate particles
-    const num_particles = 500;
 
     // Create geometry for a mesh containing a single triangle
     //const pos = [ -3, -3, 0, 3, -3, 0, 0, 3, 0];
@@ -57,28 +59,53 @@ function main() : void {
     } );
     
     // Add the triangle mesh to the scene
-    const circle = new THREE.Mesh(geom, material);
-    circle.position.set(0,2,-10);
-    scene.add(circle);
+    //const circle = new THREE.Mesh(geom, material);
+    //circle.position.set(0,2,-10);
+    //scene.add(circle);
 
     resize();  // Call directly once to initially size the canvas
     window.requestAnimationFrame(draw);
 }
 
 function update() : void{
+    canvas = document.querySelector('#main-canvas');
+    const width = canvas.width;
+    const height = canvas.height;
 
-    for(let i = 0; i<2; i++){
-        const p = new Particle();
-        const geom = new THREE.CircleGeometry(1,32);
-        const material = new THREE.ShaderMaterial({
-            vertexShader : vertShaderSource,
-            fragmentShader : fragShaderSource
-        });
-        const circle = new THREE.
+    if(particles.length<num_particles) {
+        for (let i = 0; i < 2; i++) {
+            const p = new Particle();
+            p.life = 50.0;
+            p.position = new THREE.Vector3((2*Math.random()-1)*5, (2*Math.random()-1)*3, 0);
+            const geom = new THREE.CircleGeometry(0.5, 32);
+            const material = new THREE.ShaderMaterial({
+                uniforms : {
+                    color : { value: new THREE.Color(Math.random(), Math.random(), Math.random()) }
+                },
+                vertexShader: vertShaderSource,
+                fragmentShader: fragShaderSource
+            });
+            const circle = new THREE.Mesh(geom, material);
+            circle.position.set(p.position.x, p.position.y, p.position.z);
+            scene.add(circle);
+            p.mesh = circle;
+            particles.push(p);
+        }
+    }
+    for(let i = 0; i<particles.length; i++){
+        let p = particles[i];
+        if(p.life<0){
+            scene.remove(p.mesh);
+            particles.splice(i,1);
+        }
+        if(p.life>=0){
+            p.life--;
+        }
     }
 }
 
 function draw(time : number) : void {
+    update();
     renderer.render(scene, camera);
     window.requestAnimationFrame(draw);
 }
