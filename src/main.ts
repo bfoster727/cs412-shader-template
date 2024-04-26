@@ -15,8 +15,12 @@ let renderer : THREE.WebGLRenderer;
 let scene : THREE.Scene;
 let camera : THREE.PerspectiveCamera;
 
-let num_particles = 500;
+let num_particles = 50;
 let particles : Array<Particle> = [];
+
+//Gravity vector
+let g : THREE.Vector3 = new THREE.Vector3(0, -0.0005, 0);
+let lifetime = 48;
 
 class Particle {
     position : THREE.Vector3;
@@ -28,7 +32,7 @@ class Particle {
         this.position = new THREE.Vector3(0,0,0);
         this.velocity = new THREE.Vector3(0,1,0);
         this.color = new THREE.Color(255,0,0);
-        this.life = 0;
+        this.life = 0.0;
         this.mesh = null;
     }
 }
@@ -40,7 +44,7 @@ function main() : void {
     renderer = new THREE.WebGLRenderer( {canvas} );
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera( 45.0, canvas.width / canvas.height, 0.5, 2000 );
-    camera.position.z = 8.0;
+    camera.position.z = 15;
 
 
     // Create geometry for a mesh containing a single triangle
@@ -73,10 +77,12 @@ function update() : void{
     const height = canvas.height;
 
     if(particles.length<num_particles) {
-        for (let i = 0; i < 2; i++) {
+        let num_new_particles = 1;
+        for (let i = 0; i < num_new_particles; i++) {
             const p = new Particle();
             p.life = 0.0;
-            p.position = new THREE.Vector3((2*Math.random()-1)*5, (2*Math.random()-1)*3, (2*Math.random()-1)*5);
+            p.position = new THREE.Vector3(0, -0.5, 0);
+            p.velocity = new THREE.Vector3((2*Math.random()-1)*0.01, Math.random()*0.01+0.01,(2*Math.random()-1)*0.01);
             const geom = new THREE.CircleGeometry(0.5, 32);
             const material = new THREE.ShaderMaterial({
                 uniforms : {
@@ -94,12 +100,16 @@ function update() : void{
     }
     for(let i = 0; i<particles.length; i++){
         let p = particles[i];
-        if(p.life>50){
+        if(p.life>lifetime){
             scene.remove(p.mesh);
             particles.splice(i,1);
         }
-        if(p.life<=50){
+        if(p.life<=lifetime){
             p.life++;
+            let v = p.velocity.clone();
+            p.position.add(v.multiplyScalar(p.life));
+            p.mesh.position.set(p.position.x, p.position.y, p.position.z);
+            p.velocity = p.velocity.add(g);
         }
     }
 }
