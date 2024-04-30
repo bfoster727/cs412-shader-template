@@ -16,12 +16,14 @@ let renderer : THREE.WebGLRenderer;
 let scene : THREE.Scene;
 let camera : THREE.PerspectiveCamera;
 
-let num_particles = 50;
 let particles : Array<Particle> = [];
-
-//Gravity vector
-let g : THREE.Vector3 = new THREE.Vector3(0, -0.0005, 0);
-let lifetime = 48;
+const state = {
+    gravity : 1,
+    velocity : 1,
+    num_particles : 50,
+    lifetime : 49,
+    num_new_particles : 1
+}
 
 class Particle {
     position : THREE.Vector3;
@@ -47,12 +49,12 @@ function main() : void {
     camera = new THREE.PerspectiveCamera( 45.0, canvas.width / canvas.height, 0.5, 2000 );
     camera.position.z = 15;
     
-    
-    // The material for the triangle will be our shader program
-    const material = new THREE.ShaderMaterial( { 
-        vertexShader: vertShaderSource,
-        fragmentShader: fragShaderSource 
-    } );
+    const gui = new GUI();
+    gui.add(state, 'gravity', 0, 3, 0.1);
+    gui.add(state, 'velocity', 1, 5, 0.1);
+    gui.add(state, 'num_particles', 10, 1000,1);
+    gui.add(state, 'lifetime', 5, 1000, 1);
+    gui.add(state, 'num_new_particles', 1, 10, 1);
     
     const controls = new OrbitControls(camera, canvas);
     
@@ -64,14 +66,14 @@ function update() : void{
     canvas = document.querySelector('#main-canvas');
     const width = canvas.width;
     const height = canvas.height;
+    let g : THREE.Vector3 = new THREE.Vector3(0, -0.0005*state.gravity, 0);
 
-    if(particles.length<num_particles) {
-        let num_new_particles = 1;
-        for (let i = 0; i < num_new_particles; i++) {
+    if(particles.length<state.num_particles) {
+        for (let i = 0; i < state.num_new_particles; i++) {
             const p = new Particle();
             p.life = 0.0;
             p.position = new THREE.Vector3(0, -0.5, 0);
-            p.velocity = new THREE.Vector3((2*Math.random()-1)*0.01, Math.random()*0.01+0.01,(2*Math.random()-1)*0.01);
+            p.velocity = new THREE.Vector3((2*Math.random()-1)*0.01*state.velocity, Math.random()*0.01*state.velocity+0.01,(2*Math.random()-1)*0.01*state.velocity);
             const geom = new THREE.CircleGeometry(0.5, 32);
             const material = new THREE.ShaderMaterial({
                 uniforms : {
@@ -90,11 +92,11 @@ function update() : void{
     }
     for(let i = 0; i<particles.length; i++){
         let p = particles[i];
-        if(p.life>lifetime){
+        if(p.life>state.lifetime){
             scene.remove(p.mesh);
             particles.splice(i,1);
         }
-        if(p.life<=lifetime){
+        if(p.life<=state.lifetime){
             p.life++;
             let v = p.velocity.clone();
             p.position.add(v.multiplyScalar(p.life));
