@@ -19,7 +19,9 @@ let camera : THREE.PerspectiveCamera;
 let particles : Array<Particle> = [];
 const state = {
     gravity : 1,
-    velocity : 1,
+    horizontal_velocity : 1,
+    vertical_velocity : 1,
+    particle_size : 1,
     num_particles : 50,
     lifetime : 49,
     num_new_particles : 1
@@ -51,7 +53,9 @@ function main() : void {
     
     const gui = new GUI();
     gui.add(state, 'gravity', 0, 3, 0.1);
-    gui.add(state, 'velocity', 1, 5, 0.1);
+    gui.add(state, 'horizontal_velocity', 1, 5, 0.1);
+    gui.add(state, 'vertical_velocity', 1, 5, 0.1);
+    gui.add(state, 'particle_size', 1, 10, 1);
     gui.add(state, 'num_particles', 10, 1000,1);
     gui.add(state, 'lifetime', 5, 1000, 1);
     gui.add(state, 'num_new_particles', 1, 10, 1);
@@ -73,8 +77,8 @@ function update() : void{
             const p = new Particle();
             p.life = 0.0;
             p.position = new THREE.Vector3(0, -0.5, 0);
-            p.velocity = new THREE.Vector3((2*Math.random()-1)*0.01*state.velocity, Math.random()*0.01*state.velocity+0.01,(2*Math.random()-1)*0.01*state.velocity);
-            const geom = new THREE.CircleGeometry(0.5, 32);
+            p.velocity = new THREE.Vector3((2*Math.random()-1)*0.01*state.horizontal_velocity, Math.random()*0.01*state.vertical_velocity+0.01,(2*Math.random()-1)*0.01*state.horizontal_velocity);
+            const geom = new THREE.CircleGeometry(0.1*state.particle_size, 32);
             const material = new THREE.ShaderMaterial({
                 uniforms : {
                     color : { value: new THREE.Color(Math.random(), Math.random(), Math.random()) }
