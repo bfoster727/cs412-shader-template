@@ -68,8 +68,6 @@ function main() : void {
 
 function update() : void{
     canvas = document.querySelector('#main-canvas');
-    const width = canvas.width;
-    const height = canvas.height;
     let g : THREE.Vector3 = new THREE.Vector3(0, -0.0005*state.gravity, 0);
 
     if(particles.length<state.num_particles) {
@@ -105,6 +103,7 @@ function update() : void{
             let v = p.velocity.clone();
             p.position.add(v.multiplyScalar(p.life));
             p.mesh.position.set(p.position.x, p.position.y, p.position.z);
+            p.mesh.lookAt(camera.position);
             p.velocity = p.velocity.add(g);
         }
     }
